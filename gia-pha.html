@@ -1,159 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html, body{
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin:0;
+        overflow: hidden;
+        font-family: Helvetica;
+        }
+        #tree{
+        width:100%;
+        height:100%;
+        }
 
-  <title>Nguyễn Sư Tộc</title>
-  <meta content="" name="description">
-  <meta content="" name="keywords">
+        .blurred rect, .blurred image, .blurred text, .blurred use {
+        filter: blur(5px) grayscale(85%);
+        }
 
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Inter:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-
-  <!-- Template Main CSS Files -->
-  <link href="assets/css/variables.css" rel="stylesheet">
-  <link href="assets/css/main.css" rel="stylesheet">
-
-  <!-- =======================================================
-  * Template Name: ZenBlog
-  * Updated: Sep 18 2023 with Bootstrap v5.3.2
-  * Template URL: https://bootstrapmade.com/zenblog-bootstrap-blog-template/
-  * Author: BootstrapMade.com
-  * License: https:///bootstrapmade.com/license/
-  ======================================================== -->
+        .selected rect{
+        fill: #FFCA28 !important;
+        }
+    </style>
 </head>
-
 <body>
+    <div id="tree"/>
+    <script src="https://balkan.app/js/FamilyTree.js"></script>
+    <script>
+        //JavaScript
 
-  <!-- ======= Header ======= -->
-  <header id="header" class="header d-flex align-items-center fixed-top">
-    <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
+        var focusedNodeId = 3;
+        FamilyTree.SEARCH_PLACEHOLDER = "Tìm theo tên"; // the default value is "Search"
 
-      <a href="index.html" class="logo d-flex align-items-center">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
-        <!-- <img src="assets/img/logo.png" alt=""> -->
-        <h1>NguyễnSư</h1>
-      </a>
+        var family = new FamilyTree(document.getElementById("tree"), {
+            nodeMouseClick: FamilyTree.action.none,
+            mouseScrool: FamilyTree.action.none,
+            scaleInitial: FamilyTree.match.boundary,
+            enableSearch: false,
+            mode: 'dark',
+            nodeBinding: {
+                field_0: "name",
+                field_1: "birthDate",
+                img_0: "photo",
+            },
+            menu: {
+                    pdf: { text: "Export PDF" },
+                    png: { text: "Export PNG" },
+                    svg: { text: "Export SVG" },
+                    csv: { text: "Export CSV" },
+                    json: { text: "Export JSON" }
+                },
+                nodeMenu: {
+                    pdf: { text: "Export PDF" },
+                    png: { text: "Export PNG" },
+                    svg: { text: "Export SVG" }
+                },
+            enableSearch: true,
+            searchFields: ["name"],
+        });
 
-      <nav id="navbar" class="navbar">
-        <ul>
-          <li><a href="index.html">Trang chủ</a></li>
-          <li><a href="lich-su-toc.html">Lịch sử Tộc Nguyễn Sư</a></li>
-          <li><a href="gia-pha.html">Gia phả</a></li>
-          <li><a href="lien-he.html">Liên hệ</a></li>
-        </ul>
-      </nav><!-- .navbar -->
 
-      <div class="position-relative">
-        <a href="https://www.facebook.com/groups/nguyensutoctinhdongtay" class="mx-2"><span class="bi-facebook"></span></a>
-        <a href="#" class="mx-2"><span class="bi-twitter"></span></a>
-        <a href="#" class="mx-2"><span class="bi-instagram"></span></a>
+        family.on('click', function(sender, args){
+            focusedNodeId = args.node.id;
+            family.draw();
+        });
 
-        <a href="#" class="mx-2 js-search-open"><span class="bi-search"></span></a>
-        <i class="bi bi-list mobile-nav-toggle"></i>
+        family.on("prerender", function(sender, args){
+            if (focusedNodeId == null){
+                return;
+            }
+            var nodes = args.res.nodes;
+            var node = nodes[focusedNodeId];
+            node.tags.push('selected');
+            iterate_parents(nodes, node);
+            iterate_children(nodes, node);
+            iterate_partners(nodes, node);
+            for(var id in nodes){
+                if (!nodes[id].tags.has('focused')){
+                    nodes[id].tags.push('blurred');
+                }
+            }
+            focusedNodeId = null;
+        });
 
-        <!-- ======= Search Form ======= -->
-        <div class="search-form-wrap js-search-form-wrap">
-          <form action="#" class="search-form">
-            <span class="icon bi-search"></span>
-            <input type="text" placeholder="Search" class="form-control">
-            <button class="btn js-search-close"><span class="bi-x"></span></button>
-          </form>
-        </div><!-- End Search Form -->
+        family.load([
+            { id: 0, pids: [1], gender: 'male', name: 'Yuriy Gusev', birthDate: '1867-09-16', deathDate: '1922-06-29', photo: 'https://cdn.balkan.app/shared/m60/1.jpg', city: "Nizhniy Novgorod", country: "Russia" },
+            { id: 1, pids: [0], gender: 'female', name: 'Nastya Pushkina', birthDate: '1873-07-03', deathDate: '1933-05-05', photo: 'https://cdn.balkan.app/shared/w60/1.jpg', city: "Nizhniy Novgorod", country: "Russia" },
+            { id: 2, pids: [3], gender: 'female', name: 'Agnessa Semenova', fid: 0, mid: 1, birthDate: '1909-05-03', deathDate: '1992-05-20', photo: 'https://cdn.balkan.app/shared/w60/2.jpg', city: "Krasnodar", country: "Russia" },
+            { id: 3, pids: [2], gender: 'male', name: 'Isai Vasiliev', birthDate: '1907-06-22', deathDate: '1987-11-20', photo: 'https://cdn.balkan.app/shared/m60/2.jpg', city: "Krasnodar", country: "Russia" },
+            { id: 4, pids: [5], gender: 'male', name: 'Yermolai Kozlov', fid: 3, mid: 2, birthDate: '1940-05-13', photo: 'https://cdn.balkan.app/shared/m60/3.jpg', address: "Neybuta, bld. 57, appt. 336", city: "Primorskiy kray", phone: "+7(4232)14-90-18", country: "Russia" },
+            { id: 5, pids: [4], gender: 'female', name: 'Julija Popova', fid: 21, mid: 22, birthDate: '1942-10-02', photo: 'https://cdn.balkan.app/shared/w60/3.jpg', address: "Neybuta, bld. 57, appt. 336", city: "Primorskiy kray", phone: "+7(861)166-92-10", country: "Russia" },
+            { id: 6, pids: [10, 11, 12, 13], gender: 'male', name: 'Savin Makarov', fid: 4, mid: 5, birthDate: '1964-11-21', photo: 'https://cdn.balkan.app/shared/m30/1.jpg', address: "Tankista Belorossova Ul., bld. 2, appt. 51", city: "Ivanovo", phone: "+7(4932)86-83-67", country: "Russia", desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mauris arcu, dapibus vitae iaculis sit amet, lobortis eget sapien. Nullam dignissim lacus pharetra libero eleifend imperdiet. Pellentesque in est id mauris ullamcorper tempor. Donec blandit ipsum nulla, eu efficitur ex pulvinar a.' },
+            { id: 7, gender: 'female', name: 'Ekaterina Fedoroa', fid: 4, mid: 5, birthDate: '1965-03-15', photo: 'https://cdn.balkan.app/shared/w30/1.jpg', address: "Ul Krasilnikova, bld. 24", city: "Kemerovo", phone: "+7(3842)45-38-84", country: "Russia" },
+            { id: 8, gender: 'male', name: 'Borya Sorokin', fid: 4, mid: 5, birthDate: '1961-12-12', photo: 'https://cdn.balkan.app/shared/m30/2.jpg', address: "Lunacharskogo, bld. 57, appt. 57", city: "Tyumen", phone: "+7(3452)63-71-34", country: "Russia" },
+            { id: 9, gender: 'male', name: 'Klavdii Zhukov', fid: 4, mid: 5, birthDate: '1971-01-19', photo: 'https://cdn.balkan.app/shared/m30/3.jpg', address: "Tashkentskaya Ul., bld. 109, appt. 1", city: "Samara", phone: "+7(846)287-81-81", country: "Russia" },
+            { id: 10, pids: [6], gender: 'female', name: 'Efrosinia Sorokina', birthDate: '1977-03-03', photo: 'https://cdn.balkan.app/shared/w30/2.jpg', address: "Lenina, bld. 175/1, appt. 43", city: "Rostov-na-donu", phone: "+7(863)354-67-14", country: "Russia" },
+            { id: 11, pids: [6], gender: 'female', name: 'Gulistanskiy Baranova', birthDate: '1979-04-26', photo: 'https://cdn.balkan.app/shared/w30/3.jpg', address: "Surkova, bld. 14, appt. 52", city: "Chelyabinsk", phone: "+7(351)121-01-17", country: "Russia" },
+            { id: 12, pids: [6], gender: 'female', name: 'Praskoviya Makarova', birthDate: '1981-03-13', photo: 'https://cdn.balkan.app/shared/w30/4.jpg', address: "Topkinskiy Mkrn, bld. 57, appt. 54", city: "Irkutsk", phone: "+7(3952)67-30-48", country: "Russia" },
+            { id: 13, pids: [6], gender: 'female', name: 'Mariya Popoa', birthDate: '1988-03-14', photo: 'https://cdn.balkan.app/shared/w30/5.jpg', address: "Lazo Ul., bld. 103", city: "Stavropol", phone: "+7(8652)97-73-24", country: "Russia" },
+            { id: 14, gender: 'female', name: 'Borbala Novikova', fid: 6, mid: 13, birthDate: '2000-12-12', photo: 'https://cdn.balkan.app/shared/w10/1.jpg', address: "Soboleva Ul., bld. 116/А, appt. 4", city: "Smolensk", phone: "+7(4812)17-68-17", country: "Russia" },
+            { id: 15, gender: 'male', name: 'Efrosin Fedorov', fid: 6, mid: 13, birthDate: '2001-03-22', photo: 'https://cdn.balkan.app/shared/m10/1.jpg', address: "Soboleva Ul., bld. 116/А, appt. 4", city: "Smolensk", phone: "+7(3842)33-11-89", country: "Russia" },
+            { id: 16, gender: 'female', name: 'Olya Mikhailova', fid: 6, mid: 13, birthDate: '2004-06-06', photo: 'https://cdn.balkan.app/shared/w10/4.jpg', address: "Soboleva Ul., bld. 116/А, appt. 4", city: "Smolensk", phone: "+7(3519)83-79-24", country: "Russia" },
+            { id: 17, gender: 'male', name: 'Venedikt Antonov', fid: 6, mid: 13, birthDate: '2006-04-14', photo: 'https://cdn.balkan.app/shared/m10/3.jpg', address: "Soboleva Ul., bld. 116/А, appt. 4", city: "Smolensk", phone: "+7(39553)5-96-59", country: "Russia" },
+            { id: 18, gender: 'female', name: 'Irina Sokolova', fid: 6, mid: 12, birthDate: '2010-01-01', photo: 'https://cdn.balkan.app/shared/w10/3.jpg', address: "Soboleva Ul., bld. 116/А, appt. 4", city: "Smolensk", phone: "+7(831)655-76-47", country: "Russia" },
+            { id: 19, pids: [20], gender: 'male', name: 'Yasha Nikitin', birthDate: '1893-06-05', photo: 'https://cdn.balkan.app/shared/m60/4.jpg', city: "Shelekhov", country: "Russia" },
+            { id: 20, pids: [19], gender: 'female', name: 'Polina Guseva', birthDate: '1891-09-19', photo: 'https://cdn.balkan.app/shared/w60/4.jpg', city: "Shelekhov", country: "Russia" },
+            { id: 21, pids: [22], gender: 'male', name: 'Samuil Kozlov', fid: 19, mid: 20, birthDate: '1921-07-14', photo: 'https://cdn.balkan.app/shared/m60/5.jpg', city: "Krasnoyarsk", country: "Russia" },
+            { id: 22, pids: [21], gender: 'female', name: 'Borbala Morozova', birthDate: '1933-11-02', photo: 'https://cdn.balkan.app/shared/w60/5.jpg', city: "Krasnoyarsk", country: "Russia" }
+        ]);
 
-      </div>
 
-    </div>
 
-  </header><!-- End Header -->
+        function iterate_partners(nodes, node){        
+            if (node.pids){
+                for(var i = 0; i < node.pids.length; i++){
+                    var pnode = nodes[node.pids[i]];
+                    if (!pnode.tags.has('focused')){
+                        pnode.tags.push('focused');
+                    }
+                }
+            }
+        }
 
-  <main id="main">
+        function iterate_parents(nodes, node){
+            if (!node.tags.has('focused')){
+                node.tags.push('focused');
+            }
+            var mnode = nodes[node.mid];
+            var fnode = nodes[node.fid];
 
-    <h1>Lập trình viên đang cập nhật</h1>
+            if (mnode){
+                iterate_parents(nodes, mnode);
+            }
+            
+            if (fnode){
+                iterate_parents(nodes, fnode);
+            }
+        }
 
-  </main><!-- End #main -->
+        function iterate_children(nodes, node){
+            if (node){
+                if (!node.tags.has('focused')){
+                    node.tags.push('focused');
+                }
+                for(var i = 0; i < node.ftChildrenIds.length; i++){
+                    var cnode = nodes[node.ftChildrenIds[i]];
+                    if (cnode.mid == node.id || cnode.fid == node.id){
+                        iterate_children(nodes, cnode);
+                    }
+                }
+            }
+        }
 
-  <!-- ======= Footer ======= -->
-  <footer id="footer" class="footer">
-
-    <div class="footer-content">
-      <div class="container">
-
-        <div class="row g-5">
-          <div class="col-lg-4">
-            <h3 class="footer-heading">Nguyễn Sư Tộc</h3>
-            <p>Từ xưa đến nay văn hóa gia tộc hay văn hóa dòng họ là một nét đẹp văn hóa riêng của người Việt Nam. Hiện nay, có rất nhiều dòng họ đã xây dựng những chuẩn mực về xây dựng văn hóa dòng họ thông qua các hoạt động ý nghĩa, thiết thực, mỗi dòng họ thường có các bậc bô lão và thành lập ra hội đồng gia tộc để bàn bạc, đưa ra và triển khai các vấn đề trọng đại của dòng họ. Vậy hội đồng gia tộc là gì?</p>
-            <p><a href="lich-su-toc.html" class="footer-link-more">Đọc thêm</a></p>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-legal">
-      <div class="container">
-
-        <div class="row justify-content-between">
-          <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-            <div class="copyright">
-              © Bản quyền <strong><span>Thanh Nguyen</span></strong>
-            </div>
-
-            <div class="credits">
-              <!-- All the links in the footer should remain intact. -->
-              <!-- You can delete the links only if you purchased the pro version. -->
-              <!-- Licensing information: https://bootstrapmade.com/license/ -->
-              <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/herobiz-bootstrap-business-template/ -->
-              Thiết kế của <a href="https://bootstrapmade.com/">Thanh Nguyen</a>
-            </div>
-
-          </div>
-
-          <div class="col-md-6">
-            <div class="social-links mb-3 mb-lg-0 text-center text-md-end">
-              <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
-              <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
-              <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
-              <a href="#" class="google-plus"><i class="bi bi-skype"></i></a>
-              <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-    </div>
-
-  </footer>
-
-  <a href="#" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-  <!-- Vendor JS Files -->
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
-  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-  <script src="assets/vendor/aos/aos.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
-
-  <!-- Template Main JS File -->
-  <script src="assets/js/main.js"></script>
-
+    </script>
 </body>
-
 </html>
