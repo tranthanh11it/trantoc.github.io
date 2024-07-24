@@ -107,7 +107,7 @@
         : getStrokeForStatus(obj.part.data.status,)
     ).ofObject();
 
-  const genderToText = (gender) => (gender === "M" ? "MALE" : "FEMALE");
+  const genderToText = (gender) => (gender === "M" ? "Nam" : "Nữ");
 
   const genderToTextColor = (gender) =>
     gender === "M" ? theme.colors.maleBadgeText : theme.colors.femaleBadgeText;
@@ -216,15 +216,18 @@
       alignmentFocus: go.Spot.Top,
       alignment: new go.Spot(0, 0, STROKE_WIDTH / 2, IMAGE_TOP_MARGIN),
     })
-      .add(new go.Shape(
-        {
-          figure: "Circle",
-          fill: theme.colors.personNodeBackground,
-          strokeWidth: STROKE_WIDTH,
-          desiredSize: new go.Size(IMAGE_DIAMETER, IMAGE_DIAMETER),
-        })
-        .bind(statusStrokeBinding())
-        .bind(highlightStrokeBinding())
+      .add(
+        // new go.Shape(
+        // {
+        //   figure: "Circle",
+        //   fill: theme.colors.personNodeBackground,
+        //   strokeWidth: STROKE_WIDTH,
+        //   desiredSize: new go.Size(IMAGE_DIAMETER, IMAGE_DIAMETER),
+        // })
+        // .bind(statusStrokeBinding())
+        // .bind(highlightStrokeBinding()),
+        new go.Picture("assets/img/avata.jpg",
+          { width: 55, height: 55}),
       )
       .add(new go.Picture({ scale: 0.9 })
         .bind(imageSourceBinding())
